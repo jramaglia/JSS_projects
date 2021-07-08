@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="ns" default="espros_tof_cam660"/>
+  <arg name="nn" default="camera"/>
+  <arg name="respawn" default="false"/>  
+  <arg name="lensType" default="0"/>
+  <arg name="lensCenterOffsetX" default="0"/>
+  <arg name="lensCenterOffsetY" default="0"/>
+  <arg name="imageType" default="1"/>
+  <arg name="startStream" default="true"/>
+  <arg name="int0"  default="50"/>
+  <arg name="int1"  default="400"/>
+  <arg name="intGr" default="3000"/>
+  <arg name="offset" default="0"/>
+  <arg name="minAmplitude" default="100"/> 
+  <arg name="frequenceModulation" default="0"/>
+  <arg name="channel" default="0"/>
+  <arg name="medianFilter" default="false"/>
+  <arg name="averageFilter" default="false"/>
+  <arg name="edgeFilterThreshold" default="0"/>
+  <arg name="temporalFilterFactor" default="0.0"/>
+  <arg name="temporalFilterThreshold" default="0"/>
+  <arg name="temporalEdgeFilterLowThreshold" default="0"/>
+  <arg name="temporalEdgeFilterHighThreshold" default="0"/>
+  <arg name="InterferenceDetectLimit" default="0"/>
+  <arg name="useLastValue" default="false"/>    
+  <arg name="cartesian" default="true"/>
+  <arg name="publishPointCloud" default="true"/>
+
+  <group ns="$(arg ns)">
+    <node pkg="espros_tof_cam660"
+          type="tof_cam660_node"
+          name="$(arg nn)"
+          output="screen"
+          respawn="$(arg respawn)">
+
+
+      <param name="lensType" value="$(arg lensType)"/>
+      <param name="lensCenterOffsetX" value="$(arg lensCenterOffsetX)"/>
+      <param name="lensCenterOffsetY" value="$(arg lensCenterOffsetY)"/>
+      <param name="imageType" value="$(arg imageType)"/>
+      <param name="startStream" value="$(arg startStream)"/>
+      <param name="int0" value="$(arg int0)"/>
+      <param name="int1" value="$(arg int1)"/>
+      <param name="intGr" value="$(arg intGr)"/>
+      <param name="offset" value="$(arg offset)"/>
+      <param name="minAmplitude" value="$(arg minAmplitude)"/>
+      <param name="frequenceModulation" value="$(arg frequenceModulation)"/>
+      <param name="channel" value="$(arg channel)"/>
+      <param name="medianFilter" value="$(arg medianFilter)"/>
+      <param name="averageFilter" value="$(arg averageFilter)"/>
+      <param name="edgeFilterThreshold" value="$(arg edgeFilterThreshold)"/>
+      <param name="temporalFilterFactor" value="$(arg temporalFilterFactor)"/>
+      <param name="temporalFilterThreshold" value="$(arg temporalFilterThreshold)"/>
+      <param name="temporalEdgeFilterLowThreshold" value="$(arg temporalEdgeFilterLowThreshold)"/>
+      <param name="temporalEdgeFilterHighThreshold" value="$(arg temporalEdgeFilterHighThreshold)"/>
+      <param name="InterferenceDetectLimit" value="$(arg InterferenceDetectLimit)"/>
+      <param name="useLastValue" value="$(arg useLastValue)"/>      
+      <param name="cartesian" value="$(arg cartesian)"/>
+      <param name="publishPointCloud" value="$(arg publishPointCloud)"/>
+
+      <remap from="distance_image_raw" to="$(arg nn)/distance_image_raw"/>
+      <remap from="amplitude_image_raw" to="$(arg nn)/amplitude_image_raw"/>
+      <remap from="dcs_image_raw" to="$(arg nn)/dcs_image_raw"/>
+      <remap from="camera_info" to="$(arg nn)/camera_info"/> 
+      <remap from="set_camera_info" to="$(arg nn)/set_camera_info"/> 
+    </node>
+
+    <node name="rviz" pkg="rviz" type="rviz" args= "-d $(find espros_tof_cam660)/rviz/config_cam660.rviz" > </node>
+    <node name="rqt_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure"> </node>
+
+  </group>
+</launch>
