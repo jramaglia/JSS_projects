@@ -3,6 +3,12 @@ from struct import unpack_from
 import json
 import numpy as np
 from websocket import create_connection
+import math
+import sys
+
+from sensor_msgs.msg import PointCloud2
+import rospy
+from std_msgs.msg import String,Int32,Int32MultiArray,MultiArrayLayout,MultiArrayDimension,Float32MultiArray
 
 DTYPES = {
     0: np.int8,
@@ -17,6 +23,19 @@ DTYPES = {
 
 ASCII_RS = '\u001e'
 ASCII_US = '\u001f'
+
+
+
+def talk(msg): # send data
+      rospy.init_node('talk', anonymous=True)
+      pub = rospy.Publisher('/radar_track', String, queue_size=10)
+      r = rospy.Rate(10) # 10hz
+      rospy.loginfo(msg)
+      #msg = Float32MultiArray()
+      pub.publish(msg)
+      r.sleep()
+
+
 
 
 def to_message(buffer):
@@ -44,7 +63,7 @@ def to_message(buffer):
 
 def main():
     # """ connect to server and echoing messages """
-    listener = create_connection("ws://10.0.0.217:1234/")
+    listener = create_connection("ws://10.158.224.89:1234/")
     # retrieve current configuration
     listener.send(json.dumps({
         'Type': 'COMMAND',
@@ -56,17 +75,16 @@ def main():
         }
     }))
 
-
     # set outputs for each frame
     listener.send(json.dumps({
         'Type': 'COMMAND',
         'ID': 'SET_OUTPUTS',
         'Payload': {
             # possible binary_outputs: 'pairs', 'freqs', 'I', 'Q', 'inCar_PC_RAW', 'InCarOccupiedSeatsLogical',
-              # 'InCarOccupantTypeClass' 
+              # 'InCarOccupantTypeClass'
             # possible json_outputs: same as the binary outputs + 'inCar_PC_Processed', 'InCarCpdAlarm'
-            'binary_outputs': ['InCarOccupiedSeatsLogical', 'InCarOccupantTypeClass', 'sbr'],
-            'json_outputs': ['inCar_PC_Processed', 'InCarCpdAlarm']
+            'binary_outputs': ['Vayyar_InCarProcessedPointCloud'],
+            'json_outputs': ['Vayyar_InCarProcessedPointCloud']
         }
     }))
 
@@ -84,17 +102,22 @@ def main():
     while True:
         buffer = listener.recv()
         data = to_message(buffer)
-        print(data['ID'])
+        #print(data['ID'])
         if data['ID'] == 'BINARY_DATA':
             # data['Payload'] is now available to use
             for index, item in enumerate (data['Payload']):
-                print(item)
-                print(data['Payload'][item])
+                #print(item) 
+                print(data)
+                talk(data['Payload'][item].__str__())
+               
+
             listener.send(json.dumps({'Type': 'QUERY', 'ID': 'BINARY_DATA'}))
         if data['ID'] == 'JSON_DATA':
             for index, item in enumerate (data['Payload']):
-                print(item)
-                print(data['Payload'][item])
+
+                #print(data['Payload'][item])
+                talk(data['Payload'][item].__str__())
+                #talker.talk(item)
             listener.send(json.dumps({'Type': 'QUERY', 'ID': 'JSON_DATA'}))
         if data['ID'] == 'GET_STATUS':
             print(data['Payload']['status'])
@@ -106,4 +129,7 @@ def main():
 
 
 if __name__ == '__main__':
+    
     main()
+    talk()
+  
